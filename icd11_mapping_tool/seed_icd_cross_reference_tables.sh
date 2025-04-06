@@ -29,6 +29,69 @@ if [ -z "$MYSQL_USER" ] || [ -z "$MYSQL_PASS" ] || [ -z "$MYSQL_DB" ] || [ -z "$
     exit 1
 fi
 
+mysql -uroot -p"$MYSQL_PASS" -h "$MYSQL_HOST" -P "$MYSQL_PORT" $MYSQL_DB <<'SQL'
+CREATE TABLE IF NOT EXISTS icd11_10To11MapToMultipleCategories (
+    `10ClassKind` VARCHAR(16),
+    `Depth` VARCHAR(1),
+    `icd10Code` VARCHAR(7),
+    `icd10Chapter` VARCHAR(5),
+    `icd10Title` VARCHAR(186),
+    `11ClassKind` VARCHAR(10),
+    `Depth_11` VARCHAR(1),
+    `ICD_11_Foundation_URI` VARCHAR(39),
+    `Linearization_release_URI` VARCHAR(67),
+    `icd11Code` VARCHAR(28),
+    `icd11Chapter` VARCHAR(122),
+    `icd11Title` VARCHAR(403)
+);
+
+CREATE TABLE IF NOT EXISTS icd11_10To11MapToOneCategory (
+    `10ClassKind` VARCHAR(16),
+    `10DepthInKind` VARCHAR(1),
+    `icd10Code` VARCHAR(7),
+    `icd10Chapter` VARCHAR(5),
+    `icd10Title` VARCHAR(186),
+    `11ClassKind` VARCHAR(10),
+    `11DepthInKind` VARCHAR(1),
+    `ICD_11_FoundationURI` VARCHAR(39),
+    `Linearization_releaseURI` VARCHAR(67),
+    `icd11Code` VARCHAR(28),
+    `icd11Chapter` VARCHAR(122),
+    `icd11Title` VARCHAR(403)
+);
+
+CREATE TABLE IF NOT EXISTS icd11_11To10MapToOneCategory (
+    `Linearization_release_URI` VARCHAR(67),
+    `icd11Code` VARCHAR(7),
+    `icd11Chapter` VARCHAR(152),
+    `icd11Title` VARCHAR(212),
+    `icd10Code` VARCHAR(10),
+    `icd10Chapter` VARCHAR(129),
+    `icd10Title` VARCHAR(160)
+);
+
+CREATE TABLE IF NOT EXISTS icd11_foundation_10To11MapToOneCategory (
+    `10ClassKind` VARCHAR(8),
+    `10DepthInKind` VARCHAR(1),
+    `icd10Code` VARCHAR(7),
+    `icd10Chapter` VARCHAR(5),
+    `icd10Title` VARCHAR(186),
+    `ICD_11_FoundationURI` VARCHAR(39),
+    `icd11Title` VARCHAR(299),
+    `2024_Jan_21` VARCHAR(10),
+    `Unknown` VARCHAR(2)
+);
+
+CREATE TABLE IF NOT EXISTS icd11_foundation_11To10MapToOneCategory (
+    `Foundation_URI` VARCHAR(39),
+    `icd11Code` VARCHAR(7),
+    `icd11Chapter` VARCHAR(299),
+    `icd11Title` VARCHAR(300),
+    `icd10Code` VARCHAR(187),
+    `icd10Title` VARCHAR(200)
+);
+SQL
+
 # Directories
 INPUT_DIR="./mapping"
 

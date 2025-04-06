@@ -13,41 +13,20 @@ fi
 # Load variables
 export $(grep -v '^#' .env | xargs)
 
+sudo apt-get update
+sudo apt-get install -y mariadb-client-10.5
+
+mysql -h db-sandbox -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS sandbox;"
+
+curl -X 'GET' \
+  'icdapi/icd/entity' \
+  -H 'accept: application/json' \
+  -H 'API-Version: v2' \
+  -H 'Accept-Language: en'
+
 # --------------------------
 # Install JupyterLab
 # --------------------------
 
 echo "🚀 Installing Jupyter Notebook..."
 pip install notebook
-
-# Start Jupyter Notebook in the background
-echo "🚀 Starting Jupyter Notebook..."
-jupyter notebook --ip=0.0.0.0 --allow-root --NotebookApp.token="${JUPYTER_NB_TOKEN}" --NotebookApp.password='' --NotebookApp.port=8888 &
-
-# --------------------------
-# Install MySQL
-# --------------------------
-
-echo "🔧 Installing MySQL Client and Server..."
-sudo apt-get update
-DEBIAN_FRONTEND=noninteractive sudo apt-get install -y mysql-client mysql-server
-
-# Start MySQL manually
-echo "🛢️ Starting MySQL server manually..."
-mysqld_safe --skip-networking=0 --bind-address=0.0.0.0 &
-
-# Wait a few seconds to ensure MySQL is ready
-sleep 10
-
-# Create the database if it doesn't exist
-echo "🛢️ Creating database if not exists..."
-mysql -uroot -e "CREATE DATABASE IF NOT EXISTS analytics;"
-
-# --------------------------
-# Final messages
-# --------------------------
-
-echo "✅ Environment setup completed!"
-echo ""
-echo "🌐 Jupyter running at: http://localhost:8888"
-echo "🛢️ MySQL service running (user: root, no password by default)"
