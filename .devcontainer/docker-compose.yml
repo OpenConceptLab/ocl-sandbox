@@ -1,0 +1,43 @@
+
+services:
+  sandbox:
+    image: mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
+    container_name: sandbox
+    volumes:
+      - .:/workspaces/ocl-sandbox
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8888:8888"  # Jupyter
+    command: sleep infinity  # Deixa o container rodando até você abrir o DevContainer sobre ele
+    networks:
+      - devnet
+
+  icdapi:
+    image: whoicd/icd-api
+    container_name: icdapi
+    environment:
+      - acceptLicense=true
+      - saveAnalytics=true
+    ports:
+      - "8887:80"  # ICD API
+    networks:
+      - devnet
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"  # MySQL
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - devnet
+
+volumes:
+  mysql-data:
+
+networks:
+  devnet:
+    driver: bridge
