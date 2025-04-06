@@ -1,1 +1,7 @@
 # OCL Sandbox
+
+The **OCL Sandbox** is a flexible, experimental environment designed to accelerate the development, testing, and improvement of tools and workflows within the Open Concept Lab (OCL) ecosystem. It provides a safe space to prototype features such as terminology mappings, API integrations, data quality checks, and advanced search capabilities without affecting production systems. By combining lightweight services, DevContainer setups, and modern cloud-native practices, the OCL Sandbox helps streamline innovation and encourages collaboration among terminology experts, developers, and data scientists.
+
+## ICD-11 Mapping Tool
+
+The `icd11_mapping_tool` is an integrated module within the broader **OCL Sandbox** project. It focuses on accelerating and improving the mapping of **CIEL concepts** to **ICD-11**, leveraging a combination of automated services and curated workflows. The tool provides an environment where users can interact with the ICD-11 API locally, run linearization searches, autocode suggestions, cross-reference lookups, and ensure quality through terminal code validations. This dramatically reduces manual effort and increases mapping precision compared to traditional methods.
