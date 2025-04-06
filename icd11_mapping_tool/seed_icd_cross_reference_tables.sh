@@ -122,3 +122,12 @@ for file in "${!TABLES[@]}"; do
         echo "⚠️ WARNING: File not found: $full_path"
     fi
 done
+
+mysql -uroot -p"$MYSQL_PASS" -h "$MYSQL_HOST" -P "$MYSQL_PORT" $MYSQL_DB <<'SQL'
+CREATE OR REPLACE VIEW vw_icd10_codes AS
+SELECT
+    DISTINCT `cr`.`icd10Code` AS `code`,
+    `cr`.`icd10Title` AS `name`
+FROM
+    `icd11_10To11MapToMultipleCategories` `cr`;
+SQL

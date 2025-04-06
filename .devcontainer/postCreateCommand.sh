@@ -30,3 +30,12 @@ curl -X 'GET' \
 
 echo "🚀 Installing Jupyter Notebook..."
 pip install notebook
+
+# Seeding ICD-10 to 11 cross reference mapping tables
+# ------------------------------------------------
+
+cd icd11_mapping_tool
+wget https://icdcdn.who.int/static/releasefiles/2025-01/mapping.zip
+unzip mapping.zip -d mapping
+sudo chmod +x seed_icd_cross_reference_tables.sh
+./seed_icd_cross_reference_tables.sh -u root -proot -d sandbox -h db-sandbox
