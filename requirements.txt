@@ -1,4 +1,8 @@
-transformers==4.36.2
+transformers>=4.41.0
 torch>=2.0.0
 pandas>=2.0.0
 tqdm>=4.65.0
+python-dotenv>=1.0.0
+requests>=2.30.0
+pymysql>=1.1.0
+sqlalchemy>=2.0.0

@@ -2,3 +2,5 @@
 data/
 mapping.zip
 mapping/
+*.pyc
+.DS_Store
