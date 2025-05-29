@@ -1,3 +1,9 @@
 Model,Model Type,Accuracy
-all-MiniLM-L6-v2,BiEncoder,57.099999999999994
-cross-encoder/stsb-distilroberta-base, CrossEncoder,0.0
+all-MiniLM-L6-v2, BiEncoder,75.0
+sentence-transformers/all-mpnet-base-v2, BiEncoder,76.0
+sentence-transformers/allenai-specter, BiEncoder,80.0
+sentence-transformers/all-roberta-large-v1, BiEncoder,79.0
+redis/langcache-embed-medical-v1, BiEncoder,77.0
+ls-da3m0ns/bge_large_medical, BiEncoder,83.0
+Manal0809/medical-term-similarity, BiEncoder,72.0
+cross-encoder/stsb-distilroberta-base, CrossEncoder,73.0
