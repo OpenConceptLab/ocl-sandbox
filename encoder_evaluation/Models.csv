@@ -1,0 +1,7 @@
+Model,Model Type
+all-MiniLM-L6-v2, BiEncoder
+sentence-transformers/all-mpnet-base-v2, BiEncoder
+sentence-transformers/allenai-specter, BiEncoder
+sentence-transformers/all-roberta-large-v1, BiEncoder
+redis/langcache-embed-medical-v1, BiEncoder
+cross-encoder/stsb-distilroberta-base, CrossEncoder

@@ -1,0 +1,3 @@
+Model,Model Type,Accuracy
+all-MiniLM-L6-v2,BiEncoder,57.099999999999994
+cross-encoder/stsb-distilroberta-base, CrossEncoder,0.0
