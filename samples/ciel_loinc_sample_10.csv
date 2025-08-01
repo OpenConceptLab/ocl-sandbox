@@ -1,0 +1,11 @@
+local_id,name,cl,dt,loinc_code,loinc_name,loinc_map_type
+952,Absolute lymphocyte count,Test,Numeric,731-0,Lymphocytes [#/volume] in Blood by Automated count,BROADER-THAN
+1440,Fetal heart rate,Finding,Numeric,55283-6,Fetal Heart rate,SAME-AS
+169489,Urine microscopy for amorphous phosphate crystals,Test,Coded,12453-7,Phosphate crystals amorphous [Presence] in Urine sediment by Light microscopy,SAME-AS
+169187,Finger stick blood glucose,Test,Numeric,14743-9,Glucose [Moles/volume] in Capillary blood by Glucometer,BROADER-THAN
+168288,"AST to platelet ratio index (APRI), blood/serum",Test,Numeric,86465-2,AST to platelet ratio index in Serum and Blood by calculation,SAME-AS
+168217,"Creatinine measurement, urine, random (mg/dL)",Test,Numeric,35674-1,Creatinine [Mass/volume] in Urine collected for unspecified duration,NARROWER-THAN
+169657,X-ray of left radius and ulna,Radiology/Imaging Procedure,N/A,26148-7,XR Radius and Ulna - left Views,SAME-AS
+168202,Magnetic resonance imaging of thoracolumbar spine,Radiology/Imaging Procedure,N/A,25056-3,MR Unspecified body region,NARROWER-THAN
+167785,Hepatitis B virus e antigen assay,Test,Coded,13954-3,Hepatitis B virus e Ag [Presence] in Serum or Plasma by Immunoassay,BROADER-THAN
+165982,Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) RNA viral load measurement by probe and target amplification method (log number/volume),Test,Numeric,94819-0,SARS-CoV-2 (COVID-19) RNA [Log #/volume] (viral load) in Specimen by NAA with probe detection,SAME-AS

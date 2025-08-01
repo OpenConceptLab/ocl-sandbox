@@ -1,0 +1,6 @@
+name,class,datatype,units,description
+hemoglobin,test,numeric,g/dL,Blood hemoglobin measurement
+glucose fasting,test,numeric,mg/dL,Fasting blood glucose test
+blood pressure systolic,observation,numeric,mmHg,Systolic blood pressure measurement
+acetaminophen,drug,coded,,Acetaminophen medication
+diabetes type 2,diagnosis,coded,,Type 2 diabetes mellitus diagnosis

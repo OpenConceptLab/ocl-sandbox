@@ -43,6 +43,8 @@ import json
 import requests
 import pandas as pd
 import sys
+import os
+from prompts import format_llm_judge_prompt, parse_llm_response
 
 
 def matches_loinc_type(code, loinc_type):
@@ -76,10 +78,68 @@ def matches_loinc_type(code, loinc_type):
     return True
 
 
+def get_llm_recommendation(row_data, candidates, api_key, model="claude-3-5-sonnet-20241022", debug=False):
+    """
+    Get LLM recommendation for the best candidate match.
+    
+    Returns:
+        Tuple of (recommendation_id, rationale) or (None, error_message)
+    """
+    try:
+        # Lazy import to avoid requiring anthropic when not using LLM features
+        import anthropic
+        
+        client = anthropic.Anthropic(api_key=api_key)
+        
+        # Format the prompt
+        system_prompt, user_prompt = format_llm_judge_prompt(row_data, candidates, debug=debug)
+        
+        if debug:
+            print("\n" + "="*80)
+            print("DEBUG: LLM PROMPT")
+            print("="*80)
+            print("System Prompt:")
+            print(system_prompt[:500] + "..." if len(system_prompt) > 500 else system_prompt)
+            print("\nUser Prompt:")
+            print(user_prompt)
+            print("="*80 + "\n")
+        
+        # Call the API
+        message = client.messages.create(
+            model=model,
+            max_tokens=2000,
+            temperature=0,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        
+        response_text = message.content[0].text
+        
+        if debug:
+            print("\n" + "="*80)
+            print("DEBUG: LLM RESPONSE")
+            print("="*80)
+            print(response_text)
+            print("="*80 + "\n")
+        
+        # Parse the response
+        recommendation, rationale = parse_llm_response(response_text)
+        
+        return recommendation, rationale
+        
+    except ImportError:
+        return None, "anthropic package not installed. Run: pip install anthropic"
+    except Exception as e:
+        return None, f"LLM evaluation error: {str(e)}"
+
+
 def match(api_token="", api_match_url="", input_filename="", target_repo="",
           column_map={}, semantic=False, max_chunk_size=200,
           knn_num_candidates=1000, knearest=5, top_n=5, verbosity=0,
-          correct_map_column="", filter_loinc_type="", filter_fetch_factor=2.0):
+          correct_map_column="", filter_loinc_type="", filter_fetch_factor=2.0,
+          anthropic_api_key="", anthropic_model="claude-3-5-sonnet-20241022", debug=False):
     start_time = time.time()
 
     # API request parameters
@@ -98,6 +158,9 @@ def match(api_token="", api_match_url="", input_filename="", target_repo="",
     if api_token:
         headers["Authorization"] = "Token %s" % (api_token)
 
+    # Check if LLM evaluation is enabled
+    use_llm = bool(anthropic_api_key)
+    
     # Print script configuration
     if verbosity:
         print("\nCONFIGURATION:")
@@ -116,6 +179,10 @@ def match(api_token="", api_match_url="", input_filename="", target_repo="",
         print("  kNN Number of Candidates: ", knn_num_candidates)
         print("  k-Nearest: ", knearest)
         print("  Verbosity: ", verbosity)
+        if use_llm:
+            print("  LLM Evaluation: Enabled")
+            print("  Anthropic Model: ", anthropic_model)
+            print("  Debug Mode: ", debug)
         if column_map:
             print("  Column Mapping: ", json.dumps(column_map, indent=4))
 
@@ -129,8 +196,6 @@ def match(api_token="", api_match_url="", input_filename="", target_repo="",
         print("Error: Unknown file type", import_file_type)
         sys.exit(1)
 
-    # Store original columns to preserve them in output
-    original_columns = df.columns.tolist()
     
     # Process import file: Change column names, convert to dictionary and chunk
     df.rename(columns=column_map, inplace=True)
@@ -246,6 +311,34 @@ def match(api_token="", api_match_url="", input_filename="", target_repo="",
                                 result_dict["top-n"] = i + 1
                                 break
             
+            # Add LLM evaluation if enabled
+            if use_llm and filtered_candidates:
+                # Prepare row data for LLM
+                llm_row_data = data[original_row_index].copy()
+                
+                # Remove correct mapping column if specified to prevent LLM from "cheating"
+                if correct_map_column and correct_map_column in llm_row_data:
+                    del llm_row_data[correct_map_column]
+                
+                # Get LLM recommendation
+                recommendation_id, rationale = get_llm_recommendation(
+                    llm_row_data, 
+                    filtered_candidates[:top_n],
+                    anthropic_api_key,
+                    anthropic_model,
+                    debug
+                )
+                
+                result_dict["ai-recommendation"] = recommendation_id or ""
+                result_dict["ai-rationale"] = rationale or ""
+                
+                if verbosity > 1 and recommendation_id:
+                    print(f"    Row {original_row_index + 1}: AI recommended '{recommendation_id}'")
+            elif use_llm:
+                # No candidates, so no recommendation
+                result_dict["ai-recommendation"] = ""
+                result_dict["ai-rationale"] = "No candidates available for evaluation"
+            
             all_results.append(result_dict)
 
     # Combine original data with results
@@ -292,12 +385,16 @@ parser.add_argument('--knearest', type=int, default=5,
                     help="Number of nearest neighbors to consider for each row")
 parser.add_argument('-n', '--topn', type=int, default=5, help="Number of top candidates to save for each row")
 parser.add_argument('-v', '--verbosity', type=int, default=0)
-parser.add_argument('-o', '--outputfile', required=True, help="Output file to save the results")
+parser.add_argument('-o', '--outputfile', help="Output file to save the results (defaults to stdout if not provided)")
 parser.add_argument('--correctmap', help="Column name containing the correct map for top-n calculation")
 parser.add_argument('--filter-loinc-type', choices=['LOINC', 'Part', 'Group', 'List', 'Answers'],
                     help="Filter candidates by LOINC code type")
 parser.add_argument('--filter-fetch-factor', type=float, default=2.0,
                     help="Multiplier for fetching extra candidates when filtering (default: 2.0)")
+parser.add_argument('-k', '--anthropic-api-key', help="Anthropic API key for LLM evaluation")
+parser.add_argument('--model', default='claude-3-5-sonnet-20241022',
+                    help="Anthropic model to use for LLM evaluation")
+parser.add_argument('--debug', action='store_true', help="Enable debug mode for LLM prompts and responses")
 
 args = parser.parse_args()
 
@@ -315,6 +412,9 @@ if args.columnmap_filename:
 api_match_url = args.env + args.endpoint
 semantic = args.semantic == 'true'
 
+# Get Anthropic API key from args or environment
+anthropic_api_key = args.anthropic_api_key or os.environ.get('ANTHROPIC_API_KEY', '')
+
 try:
     output_df = match(
         api_token=args.token,
@@ -330,20 +430,28 @@ try:
         verbosity=args.verbosity,
         correct_map_column=args.correctmap or "",
         filter_loinc_type=getattr(args, 'filter_loinc_type', '') or "",
-        filter_fetch_factor=args.filter_fetch_factor
+        filter_fetch_factor=args.filter_fetch_factor,
+        anthropic_api_key=anthropic_api_key,
+        anthropic_model=args.model,
+        debug=args.debug
     )
     
-    # Save output file
-    output_file_type = args.outputfile.split('.')[-1]
-    if output_file_type == 'csv':
-        output_df.to_csv(args.outputfile, index=False)
-    elif output_file_type == 'xlsx':
-        output_df.to_excel(args.outputfile, index=False)
+    # Save output
+    if args.outputfile:
+        # Save to file
+        output_file_type = args.outputfile.split('.')[-1]
+        if output_file_type == 'csv':
+            output_df.to_csv(args.outputfile, index=False)
+        elif output_file_type == 'xlsx':
+            output_df.to_excel(args.outputfile, index=False)
+        else:
+            print(f"Error: Unknown output file type '{output_file_type}'. Using CSV format.")
+            output_df.to_csv(args.outputfile, index=False)
+        
+        print(f"\nOutput saved to: {args.outputfile}")
     else:
-        print(f"Error: Unknown output file type '{output_file_type}'. Using CSV format.")
-        output_df.to_csv(args.outputfile, index=False)
-    
-    print(f"\nOutput saved to: {args.outputfile}")
+        # Output to stdout
+        output_df.to_csv(sys.stdout, index=False)
     
 except Exception as e:
     print(f"Error: {str(e)}")

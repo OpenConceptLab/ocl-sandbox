@@ -1,0 +1,2 @@
+local_id,name,cl,dt,loinc_code,loinc_name,loinc_map_type
+168288,"AST to platelet ratio index (APRI), blood/serum",Test,Numeric,86465-2,AST to platelet ratio index in Serum and Blood by calculation,SAME-AS
